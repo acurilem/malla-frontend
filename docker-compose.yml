@@ -1,0 +1,35 @@
+version: '3.2'
+
+services:
+  sid_umag_mallas_front:
+    container_name: SID-UMAG-ESTUDIANTE-Mallas-frontend
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NUXT_SESSION_SESSION_STORAGE_OPTIONS_OPTIONS_URL=${NUXT_SESSION_SESSION_STORAGE_OPTIONS_OPTIONS_URL}
+    expose:
+      - 3223:3223
+    ports:
+      - 3223:3223
+    env_file:
+      - .env
+    networks:
+      - umag_network
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sid_umag_mallas_front.entrypoints=web,websecure"
+      - "traefik.http.services.sid_umag_mallas_front.loadbalancer.server.port=3223"
+      - "traefik.http.routers.sid_umag_mallas_front.service=sid_umag_mallas_front"
+      - "traefik.http.routers.sid_umag_mallas_front.middlewares=redirect-to-session@file"
+      #LOCAL
+      #- "traefik.http.routers.sid_umag_mallas_front.rule=Host(`frontend.localhost`) && (PathPrefix(`/mallas`) || PathPrefix(`/api/mallas/session`))"      
+      #- "traefik.http.routers.sid_umag_mallas_front.tls=false"
+      #PROD
+      - "traefik.http.routers.sid_umag_mallas_front.rule=Host(`sid3-prod.test-citiaps.cl`) && (PathPrefix(`/mallas`) || PathPrefix(`/api/mallas/session`))"      
+      - "traefik.http.routers.sid_umag_mallas_front.tls=true"
+      - "traefik.http.routers.web.tls.certresolver=letsencrypt"
+networks:
+  umag_network:
+    external: true
